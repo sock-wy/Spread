@@ -66,6 +66,8 @@ def run_backtest(im: pd.DataFrame, if_: pd.DataFrame, cfg: StrategyConfig | None
     im_o, im_c = im["open"].to_numpy(), im["close"].to_numpy()
     if_o, if_c = if_["open"].to_numpy(), if_["close"].to_numpy()
     s_close, s_high = df["close"].to_numpy(), df["high"].to_numpy()
+    s_open = df["open"].to_numpy()
+    long_e, short_e = df["long_entry"].to_numpy(), df["short_entry"].to_numpy()
 
     pos = 0
     entry = {}
@@ -84,7 +86,7 @@ def run_backtest(im: pd.DataFrame, if_: pd.DataFrame, cfg: StrategyConfig | None
                + cost.fee_per_contract * (n_im + n_if))
         return {
             "side": side, "kind": kind, "i": i, "time": idx[i], "n_im": n_im, "n_if": n_if,
-            "px_im": px_im, "px_if": px_if, "spread": df["open"].iat[i], "fee": fee,
+            "px_im": px_im, "px_if": px_if, "spread": s_open[i], "fee": fee,
         }
 
     def close_trade(i: int, px_im_raw: float, px_if_raw: float, reason: str, s_px: float):
@@ -116,7 +118,7 @@ def run_backtest(im: pd.DataFrame, if_: pd.DataFrame, cfg: StrategyConfig | None
     for i in range(n):
         # 1) fills scheduled from the previous bar
         if pending_exit is not None and pos != 0:
-            close_trade(i, im_o[i], if_o[i], pending_exit, df["open"].iat[i])
+            close_trade(i, im_o[i], if_o[i], pending_exit, s_open[i])
             pos, entry, pending_exit = 0, {}, None
         if pending is not None and pos == 0:
             kind, limit = pending
@@ -139,9 +141,9 @@ def run_backtest(im: pd.DataFrame, if_: pd.DataFrame, cfg: StrategyConfig | None
             if r and i + 1 < n:
                 pending_exit = r
         elif pos == 0 and i + 1 < n and not gap_next[i] and times[i] < cfg.flat_time:
-            if df["long_entry"].iat[i]:
+            if long_e[i]:
                 pending = ("long", None)
-            elif df["short_entry"].iat[i]:
+            elif short_e[i]:
                 pending = ("short", s_close[i])
 
         # mark to market
@@ -154,5 +156,5 @@ def run_backtest(im: pd.DataFrame, if_: pd.DataFrame, cfg: StrategyConfig | None
 
     trades_df = pd.DataFrame(trades)
     eq = pd.Series(equity, index=idx, name="equity")
-    stats = summarize(trades_df, eq, cost.capital)
+    stats = summarize(trades_df, eq, cost.capital, bars_per_day=n / max(1, len(np.unique(dates))))
     return BacktestResult(trades=trades_df, equity=eq, stats=stats, frame=df)

@@ -95,8 +95,24 @@ class StrategyConfig:
             setattr(base, k, v)
         return base
 
+    @classmethod
+    def us_iwm_spy(cls, **overrides) -> "StrategyConfig":
+        """ETF proxy of the RTY/ES pair: IWM (leg A) vs SPY (leg B), 1-minute SIP bars.
+
+        Used for research because ~8 years of minute data are free from Alpaca and
+        the same pair can be paper-traded there. Shares: multiplier 1, tick $0.01,
+        1 tick slippage per leg per fill, no commission (Alpaca); ~$50k per leg.
+        """
+        base = cls.us_rty_es()
+        base.costs = CostConfig(capital=100_000.0, mult_im=1.0, mult_if=1.0, tick=0.01, tick_if=0.01,
+                                slippage_ticks=1.0, fee_per_contract=0.0, open_rate=0.0, close_rate=0.0,
+                                target_notional=50_000.0)
+        for k, v in overrides.items():
+            setattr(base, k, v)
+        return base
+
     def to_dict(self) -> dict:
-        d = asdict(self)
+        d = asdict(self)  # noqa
         for k in ("short_cutoff", "long_cutoff", "flat_time"):
             d[k] = getattr(self, k).strftime("%H:%M")
         return d

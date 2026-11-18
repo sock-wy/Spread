@@ -41,3 +41,8 @@ front-month non-adjusted. `--market cn` reproduces the original IM/IF settings.
 1. Convert the CME L2 data to 1-minute bars for RTY and ES (needs a sample file).
 2. Re-optimise: plateau Sharpe on the first 70%, check out-of-sample on the last 30%.
 3. Run long and short sides together (open item from the internship).
+
+## Tuning run 2026-11-18 (IWM vs SPY, 2019-2026, 1-minute SIP bars)
+
+`python scripts/fetch_alpaca_1m.py` then `python scripts/tune_us.py`. Report: [`results/2026-11-18_iwm_spy/report.md`](results/2026-11-18_iwm_spy/report.md).
+Result: no parameter set with a positive edge; the IM/IF rules do not transfer to this pair as is.

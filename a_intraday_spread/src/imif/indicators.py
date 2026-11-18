@@ -23,8 +23,18 @@ def cci(high: pd.Series, low: pd.Series, close: pd.Series, n: int = 20) -> pd.Se
     """Commodity Channel Index with the standard 0.015 constant."""
     tp = (high + low + close) / 3.0
     sma = tp.rolling(n).mean()
-    mad = tp.rolling(n).apply(lambda x: np.mean(np.abs(x - x.mean())), raw=True)
+    mad = _rolling_mad(tp, n)
     return (tp - sma) / (0.015 * mad.replace(0.0, np.nan))
+
+
+def _rolling_mad(s: pd.Series, n: int) -> pd.Series:
+    """Rolling mean absolute deviation, vectorised (same result as rolling.apply)."""
+    x = s.to_numpy(float)
+    out = np.full(len(x), np.nan)
+    if len(x) >= n:
+        w = np.lib.stride_tricks.sliding_window_view(x, n)
+        out[n - 1:] = np.abs(w - w.mean(axis=1, keepdims=True)).mean(axis=1)
+    return pd.Series(out, index=s.index)
 
 
 def donchian(high: pd.Series, low: pd.Series, n: int = 20) -> tuple[pd.Series, pd.Series]:

@@ -1,0 +1,225 @@
+{
+  "scale_bp": {
+    "dev_q50": 24.617336862687836,
+    "dev_q75": 45.97019608921835,
+    "dev_q90": 74.43230533165203,
+    "abs_bar_move_median": 5.527701249272283,
+    "abs_bar_move_q90": 18.66753146211678
+  },
+  "dev_end": "2024-01-01",
+  "bar_minutes": 10,
+  "stage0": [
+    {
+      "tf": 1,
+      "best_plateau_sharpe": -8.319816596869426,
+      "median_sharpe": -10.303830260210262,
+      "trades_at_best": 4351
+    },
+    {
+      "tf": 3,
+      "best_plateau_sharpe": -2.2181482962707744,
+      "median_sharpe": -3.492103792337508,
+      "trades_at_best": 629
+    },
+    {
+      "tf": 5,
+      "best_plateau_sharpe": -0.8090373511892175,
+      "median_sharpe": -1.6733731958271614,
+      "trades_at_best": 157
+    },
+    {
+      "tf": 10,
+      "best_plateau_sharpe": -0.16794228035426906,
+      "median_sharpe": -0.41342790746115604,
+      "trades_at_best": 123
+    },
+    {
+      "tf": 15,
+      "best_plateau_sharpe": -0.22580774583270477,
+      "median_sharpe": -0.7960224799283763,
+      "trades_at_best": 108
+    }
+  ],
+  "stages": {
+    "stage1": {
+      "grid": {
+        "len_cci": [
+          10,
+          14,
+          20,
+          26,
+          34
+        ],
+        "len_don": [
+          10,
+          15,
+          20,
+          30,
+          40
+        ],
+        "len_ema": [
+          15,
+          20,
+          30,
+          45,
+          60
+        ]
+      },
+      "chosen": {
+        "len_cci": 10,
+        "len_don": 40,
+        "len_ema": 60
+      },
+      "dev_sharpe": -0.3069431744507598,
+      "dev_plateau_sharpe": -0.16794228035426906,
+      "dev_trades": 123
+    },
+    "stage2": {
+      "grid": {
+        "cci_low": [
+          -60.0,
+          -80.0,
+          -100.0,
+          -130.0,
+          -160.0
+        ],
+        "rsi_long_min": [
+          60.0,
+          70.0,
+          80.0
+        ],
+        "rsi_short_min": [
+          20.0,
+          30.0,
+          40.0
+        ],
+        "critical_value_bp": [
+          12.3,
+          24.6,
+          46.0,
+          74.4
+        ]
+      },
+      "chosen": {
+        "cci_low": -60.0,
+        "rsi_long_min": 80.0,
+        "rsi_short_min": 20.0,
+        "critical_value_bp": 12.3
+      },
+      "dev_sharpe": -0.6758348866271366,
+      "dev_plateau_sharpe": -1.232211079948195,
+      "dev_trades": 238
+    },
+    "stage3": {
+      "grid": {
+        "hard_stop_bp": [
+          46.0,
+          69.0,
+          91.9,
+          137.9
+        ],
+        "max_close_to_ema_bp": [
+          18.7,
+          37.3,
+          74.7
+        ],
+        "cci_exit_low": [
+          -100.0,
+          -150.0,
+          -200.0
+        ]
+      },
+      "chosen": {
+        "hard_stop_bp": 46.0,
+        "max_close_to_ema_bp": 18.7,
+        "cci_exit_low": -200.0
+      },
+      "dev_sharpe": -0.9411942755514436,
+      "dev_plateau_sharpe": -1.0373873052650375,
+      "dev_trades": 298
+    }
+  },
+  "summary": {
+    "final_params": {
+      "bar_minutes": 10,
+      "center_window": 39,
+      "len_cci": 10,
+      "len_don": 40,
+      "len_ema": 60,
+      "cci_low": -60.0,
+      "rsi_long_min": 80.0,
+      "rsi_short_min": 20.0,
+      "critical_value_bp": 12.3,
+      "hard_stop_bp": 46.0,
+      "max_close_to_ema_bp": 18.7,
+      "cci_exit_low": -200.0
+    },
+    "dev": {
+      "net": -3949.1814999978233,
+      "ann_return": -0.008038880714992591,
+      "sharpe": -0.9411942755514436,
+      "max_dd": -0.056905321472061954,
+      "days": 1258,
+      "trades": 298,
+      "win_rate": 0.3926174496644295,
+      "profit_factor": 0.7234955150500461,
+      "avg_net": -13.252286912744399,
+      "avg_gross": -13.252286912744399,
+      "avg_cost": 8.438187919463086,
+      "avg_minutes": 68.12080536912751,
+      "long": 70,
+      "short": 228
+    },
+    "holdout": {
+      "net": -1644.031099999076,
+      "ann_return": -0.005777134156274011,
+      "sharpe": -0.6303256949172548,
+      "max_dd": -0.01685189504306861,
+      "days": 721,
+      "trades": 178,
+      "win_rate": 0.4044943820224719,
+      "profit_factor": 0.7966012363120971,
+      "avg_net": -9.236129775275673,
+      "avg_gross": -9.236129775275673,
+      "avg_cost": 5.874494382022471,
+      "avg_minutes": 78.59550561797752,
+      "long": 46,
+      "short": 132
+    },
+    "baseline_cn_params_dev": {
+      "net": -73579.72029995333,
+      "ann_return": -0.2340442539408365,
+      "sharpe": -10.377551425827464,
+      "max_dd": -0.7358815117339359,
+      "days": 1258,
+      "trades": 6369,
+      "win_rate": 0.26974407285288116,
+      "profit_factor": 0.41094553387346405,
+      "avg_net": -11.55279012403097,
+      "avg_minutes": 4.867797142408541,
+      "long": 368,
+      "short": 6001
+    },
+    "baseline_cn_params_holdout": {
+      "net": -38932.83559997853,
+      "ann_return": -0.1583399940174175,
+      "sharpe": -9.56813002243606,
+      "max_dd": -0.3894005579094718,
+      "days": 721,
+      "trades": 3987,
+      "win_rate": 0.29019312766491095,
+      "profit_factor": 0.43168806686738725,
+      "avg_net": -9.764944971150824,
+      "avg_minutes": 5.042387760220717,
+      "long": 243,
+      "short": 3744
+    },
+    "walk_forward_oos": {
+      "net": -12759.47549999514,
+      "ann_return": -0.02126948911163884,
+      "sharpe": -1.8035049242595602,
+      "max_dd": -0.132314853879982,
+      "days": 1600
+    }
+  }
+}

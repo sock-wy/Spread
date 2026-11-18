@@ -21,7 +21,7 @@ def max_drawdown(equity: pd.Series) -> float:
     return float(((equity - peak) / peak).min())
 
 
-def summarize(trades: pd.DataFrame, equity: pd.Series, capital: float) -> dict:
+def summarize(trades: pd.DataFrame, equity: pd.Series, capital: float, bars_per_day: float = 240) -> dict:
     daily = equity.groupby(equity.index.normalize()).last()
     rets = daily.pct_change().dropna()
     n_days = max(len(daily), 1)
@@ -39,7 +39,7 @@ def summarize(trades: pd.DataFrame, equity: pd.Series, capital: float) -> dict:
         wins = trades.loc[trades["net"] > 0, "net"].sum()
         losses = -trades.loc[trades["net"] < 0, "net"].sum()
         held = trades["minutes"].sum()
-        session_minutes = n_days * 240
+        session_minutes = n_days * bars_per_day
         stats.update({
             "win_rate": float((trades["net"] > 0).mean()),
             "profit_factor": float(wins / losses) if losses > 0 else float("inf"),

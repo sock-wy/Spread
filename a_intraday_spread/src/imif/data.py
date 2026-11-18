@@ -135,3 +135,14 @@ def synthetic_legs(
     out_im, out_if = bars(lim), bars(lif)
     out_im.index.name = out_if.index.name = "datetime"
     return out_im, out_if
+
+
+def resample_bars(df: pd.DataFrame, minutes: int) -> pd.DataFrame:
+    """Aggregate 1-minute bar-end bars to N-minute bars (bar-end labels, bins from 09:30 ET)."""
+    if minutes == 1:
+        return df
+    agg = {"open": "first", "high": "max", "low": "min", "close": "last"}
+    if "volume" in df:
+        agg["volume"] = "sum"
+    out = df.resample(f"{minutes}min", closed="right", label="right", offset="9h30min").agg(agg)
+    return out.dropna(subset=["open", "close"])
