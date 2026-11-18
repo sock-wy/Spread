@@ -1,0 +1,88 @@
+{ ===================================================================
+  IMIF_Calc_IMLeg  —  Portfolio Strategy 1 (MultiCharts PowerLanguage)
+  -------------------------------------------------------------------
+  Reconstructed reference skeleton, written from the strategy summary.
+  It is not the original production file.
+
+  Role:
+    * computes all entry/exit conditions on the synthetic IM/IF spread
+      (Data1 = spread instrument, Data2 = IM leg)
+    * trades the IM leg
+    * broadcasts the target spread position so the IF receiver
+      (IMIF_Recv_IFLeg) enters and exits on the same bar.
+
+  Shared state (portfolio globals):
+    "imif_target"  : +1 long spread, -1 short spread, 0 flat
+    "imif_seq"     : increments on every change, lets the receiver detect
+                     a new instruction even if the target value repeats
+  =================================================================== }
+
+Inputs:
+    len_rsi(14), len_cci(20), len_don(20), len_ema(30),
+    rsi_short_min(20), rsi_long_min(80), rsi_ob(80), rsi_os(20),
+    cci_low(-100), cci_exit_low(-150), cci_exit_floor(-400), cci_ceiling(200),
+    hard_stop_pts(40), crit_value(20), center_len(240),
+    short_cutoff(1400), long_cutoff(1415), flat_time(1455);
+
+Vars:
+    vRSI(0), vCCI(0), vEMA(0), vDonUp(0), vDonLo(0), vCenter(0), vDev(0),
+    target(0), seq(0), entryPx(0);
+
+vRSI    = RSI(Close, len_rsi);
+vCCI    = CCI(len_cci);
+vEMA    = XAverage(Close, len_ema);
+vDonUp  = Highest(High, len_don)[1];
+vDonLo  = Lowest(Low, len_don)[1];
+vCenter = Average(Close, center_len);
+vDev    = AbsValue(Close - vCenter);
+
+{ ---------------- entries (only when flat) ---------------- }
+If MarketPosition = 0 then begin
+    { Short spread: limit order, before 14:00 }
+    If Time < short_cutoff
+       and vCCI[1] < cci_low and Low < Low[1]
+       and vEMA < vEMA[1] and vCCI <= vCCI[1]
+       and vRSI > rsi_short_min and vDev > crit_value then
+        target = -1;
+
+    { Long spread: market order, before 14:15 }
+    If Time < long_cutoff
+       and High[1] > vDonUp[1] and vCCI >= vCCI[1]
+       and High > High[1] and vEMA < Close and Close > Open
+       and vRSI > rsi_long_min and vDev > crit_value then
+        target = 1;
+end;
+
+{ ---------------- exits ---------------- }
+If MarketPosition = 1 then begin
+    If Close - entryPx <= -hard_stop_pts or Close < vEMA or Low <= vDonLo
+       or (vRSI > rsi_ob and vCCI > 100) then target = 0;
+end;
+If MarketPosition = -1 then begin
+    If entryPx - Close <= -hard_stop_pts or Close > vEMA or High >= vDonUp
+       or vCCI > cci_ceiling or vRSI < rsi_os
+       or (vCCI[1] < cci_exit_low and vCCI[1] > cci_exit_floor and vCCI >= cci_exit_low) then
+        target = 0;
+end;
+If Time >= flat_time then target = 0;
+
+{ ---------------- broadcast + trade the IM leg ---------------- }
+If target <> pmm_get_global_named_num("imif_target") then begin
+    seq = pmm_get_global_named_num("imif_seq") + 1;
+    pmm_set_global_named_num("imif_target", target);
+    pmm_set_global_named_num("imif_seq", seq);
+end;
+
+{ IM leg: long spread = buy IM, short spread = sell IM }
+If target = 1 and MarketPosition <> 1 then begin
+    Buy ("LS_IM") 1 contracts next bar at market;
+    entryPx = Close;
+end;
+If target = -1 and MarketPosition <> -1 then begin
+    SellShort ("SS_IM") 1 contracts next bar at Close limit;
+    entryPx = Close;
+end;
+If target = 0 then begin
+    Sell ("LX_IM") next bar at market;
+    BuyToCover ("SX_IM") next bar at market;
+end;

@@ -1,0 +1,35 @@
+{ ===================================================================
+  IMIF_Recv_IFLeg  —  Portfolio Strategy 2 (MultiCharts PowerLanguage)
+  -------------------------------------------------------------------
+  Reconstructed reference skeleton. Receiver only: it holds no signal
+  logic, so changing the strategy never touches this file.
+
+  Reads the target published by IMIF_Calc_IMLeg and mirrors it on the
+  IF leg with the opposite sign:
+      long spread  (+1) -> sell IF
+      short spread (-1) -> buy  IF
+  =================================================================== }
+
+Inputs: lots_if(1);
+Vars: target(0), seq(0), lastSeq(-1);
+
+target = pmm_get_global_named_num("imif_target");
+seq    = pmm_get_global_named_num("imif_seq");
+
+If seq <> lastSeq then begin
+    lastSeq = seq;
+
+    If target = 1 and MarketPosition <> -1 then
+        SellShort ("LS_IF") lots_if contracts next bar at market;
+
+    If target = -1 and MarketPosition <> 1 then
+        Buy ("SS_IF") lots_if contracts next bar at market;
+
+    If target = 0 then begin
+        Sell ("SX_IF") next bar at market;
+        BuyToCover ("LX_IF") next bar at market;
+    end;
+end;
+
+{ Integrity check used in the original workflow: the portfolio's total
+  trade count should be ~2x the calculation leg's trade count. }
